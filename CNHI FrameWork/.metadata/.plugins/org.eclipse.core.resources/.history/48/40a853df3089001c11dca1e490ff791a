@@ -1,0 +1,71 @@
+package com.auto.framework.utils;
+
+import javax.swing.JOptionPane;
+
+import org.openqa.selenium.remote.DesiredCapabilities;
+
+import com.google.common.base.Strings;
+
+import io.appium.java_client.AppiumDriver;
+import io.appium.java_client.android.AndroidDriver;
+import io.appium.java_client.android.AndroidElement;
+import io.appium.java_client.ios.IOSDriver;
+import io.appium.java_client.ios.IOSElement;
+
+public class AppDeviceFactory {
+	public AppiumDriver<?> driver;
+	
+	public AppDeviceFactory (AppiumDriver<?> driver) {
+		this.driver=driver;
+	}
+
+	public AppiumDriver<?> createDriver(DeviceConfiguration deviceConfiguration) {
+		DeviceType type = deviceConfiguration.getDevicePlatform(); 
+		if (type == null) {
+			String platformName = JOptionPane.showInputDialog("Please Provide Platforms: Android/Ios");
+			if (platformName.toLowerCase().contains("android")) {
+				type = DeviceType.Android;
+			} else {
+				if (!platformName.toLowerCase().contains("ios")) {
+					throw new IllegalArgumentException("No Platform available for provided value");
+				}
+				type = DeviceType.Ios;
+			}
+		}
+		DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
+		desiredCapabilities.setCapability("forceMjsonwp", true);
+		if (!Strings.isNullOrEmpty(deviceConfiguration.getDeviceUDID())) {
+			desiredCapabilities.setCapability("udid", deviceConfiguration.getDeviceUDID());
+		}
+		desiredCapabilities.setCapability("noReset", false);
+		desiredCapabilities.setCapability("app", deviceConfiguration.getAppPath());
+		desiredCapabilities.setCapability("clearSystemFiles", true);
+		desiredCapabilities.setCapability("deviceName", deviceConfiguration.getDeviceName());
+		desiredCapabilities.setCapability("newCommandTimeout", 20000);
+		switch (type) {
+		case Android:
+			if (!Strings.isNullOrEmpty(deviceConfiguration.getAndroidVirtualDevice())) {
+				desiredCapabilities.setCapability("avd", deviceConfiguration.getAndroidVirtualDevice());
+			}
+			desiredCapabilities.setCapability("commandTimeout", 20000);
+			desiredCapabilities.setCapability("overrideSession", true);
+			desiredCapabilities.setCapability("dontStopAppOnReset", true);
+			desiredCapabilities.setCapability("noSign", true);
+			desiredCapabilities.setCapability("autoLaunch", false);
+			desiredCapabilities.setCapability("appPackage", (String) deviceConfiguration.getAppPackage());
+			desiredCapabilities.setCapability("appWaitActivity", ".activity.login.SDMLoginActivity");
+			driver = new AndroidDriver<AndroidElement>(deviceConfiguration.getAppiumURL(),
+					desiredCapabilities);
+			return(AndroidDriver<?>) driver;
+		case Ios:
+			desiredCapabilities.setCapability("automationName", "XCUITEST");
+			desiredCapabilities.setCapability("showIOSLog", false);
+			desiredCapabilities.setCapability("bundleId", (String) deviceConfiguration.getAppPackage());
+			driver = new IOSDriver<IOSElement>(deviceConfiguration.getAppiumURL(),
+					desiredCapabilities);
+			return(IOSDriver<?>) driver;
+		default:
+			return null;
+		}
+	}
+}

@@ -1,0 +1,66 @@
+package com.cnhi.pageObjects;
+
+import java.time.Duration;
+
+import org.openqa.selenium.support.PageFactory;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import com.auto.framework.base.BaseTest;
+import com.auto.framework.base.Log;
+
+import io.appium.java_client.AppiumDriver;
+import io.appium.java_client.MobileElement;
+import io.appium.java_client.pagefactory.AppiumFieldDecorator;
+
+public class GenericPage extends BaseTest {
+
+	//public AppiumDriver<?> driver;
+	private final int IMPLICIT_WAIT = 10;
+
+	public GenericPage() {
+	}
+
+//	public GenericPage(AppiumDriver<?> driver) {
+//
+//		this.driver = driver;
+//		PageFactory.initElements(new AppiumFieldDecorator(this.driver, Duration.ofSeconds(IMPLICIT_WAIT)), this);
+//	}
+
+	public void clickElemet(MobileElement ele, String logMessage) {
+		waitForVisibility(ele);
+		ele.click();
+		Log.info(logMessage);
+
+	}
+
+	public void clearTextBox(MobileElement ele, String logMessage) {
+
+		ele.clear();
+		Log.info(logMessage);
+
+	}
+
+	public void sendKeysOnTextBox(MobileElement ele, String text, String logMessage) {
+
+		ele.sendKeys(text);
+		Log.info(logMessage);
+
+	}
+
+	public boolean isElementDisplay(MobileElement ele, String logMessage) {
+		try {
+			boolean b = ele.isDisplayed();
+			Log.info(logMessage);
+			return b;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+	
+    public void waitForVisibility(MobileElement e) {
+        WebDriverWait wait = new WebDriverWait(driver, IMPLICIT_WAIT);
+        wait.until(ExpectedConditions.visibilityOf(e));
+    }
+
+}
